@@ -16,10 +16,12 @@ def main(chip_id, host):
             'iteration': iteration,
             'data': data
         }))
-        print(response.json(), response.status_code)
+        # print(response.json(), response.status_code)
         while True:
-            response = urequests.get(url)
-            print(response.json(), response.status_code)
+            response = urequests.get(url, data=json.dumps({
+                'iteration': iteration
+            }))
+            # print(response.json(), response.status_code)
             if response.status_code == 200:
                 break
 
