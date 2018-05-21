@@ -41,9 +41,10 @@ def main(chip_id, host):
         w = parameters['w']
         c1 = parameters['c1']
         c2 = parameters['c2']
+        r1 = parameters['r1']
+        r2 = parameters['r2']
 
         for i in range(2):
-            r1, r2 = get_random(), get_random()
             velocity[i] = w * velocity[i] + c1 * r1 * (
                 pbest[i] - data[i]) + c2 * r2 * (gbest[i] - data[i])
             data[i] += velocity[i]
