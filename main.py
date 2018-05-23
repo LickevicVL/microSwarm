@@ -1,7 +1,6 @@
-import json
-
 import machine
 import urequests
+import ujson
 import utime
 
 
@@ -16,37 +15,37 @@ def get_random():
     return r
 
 
-def main(chip_id, host, log):
+def main(chip_id, host, log_host):
     velocity = [0, 0]
     data = [get_random(), get_random()]
     iteration = 0
     url = host + 'data'
-    logger = log + 'message'
+    logger = log_host + 'message'
 
     while iteration != 20:
         value = func(data)
-        urequests.post(logger, data=json.dumps({
+        urequests.post(logger, data=ujson.dumps({
             'id': chip_id,
-            'message': '--> {}'.format(json.dumps({
+            'message': '--> {}'.format(ujson.dumps({
                 'iteration': iteration,
                 'data': data,
                 'value': value
             }))
         }))
-        urequests.post(url, data=json.dumps({
+        urequests.post(url, data=ujson.dumps({
             'id': chip_id,
             'iteration': iteration,
             'data': data,
             'value': value
         }))
         while True:
-            response = urequests.get(url, data=json.dumps({
+            response = urequests.get(url, data=ujson.dumps({
                 'iteration': iteration
             }))
             if response.status_code == 200:
                 break
 
-            urequests.post(logger, data=json.dumps({
+            urequests.post(logger, data=ujson.dumps({
                 'id': chip_id,
                 'message': '<-- Wait'
             }))
@@ -71,14 +70,17 @@ def main(chip_id, host, log):
         iteration += 1
 
 if __name__ == '__main__':
-    PORT = '8888'
-    LOG_PORT = '8080'
-    IP = 'http://192.168.10.102:{}/'
-    HOST = IP.format(PORT)
-    LOG = IP.format(LOG_PORT)
+    with open('config.json', 'r') as file:
+        config = ujson.load(file)
 
-    CHIP_ID = machine.unique_id()
-    if CHIP_ID == b'upy-non-unique':
-        CHIP_ID = str(utime.time()).split('.')[1]
+        IP = config['host']
+        PORT = config['port']
+        LOG_PORT = config['logPort']
+        HOST = '{}:{}/'.format(IP, PORT)
+        LOG = '{}:{}/'.format(IP, LOG_PORT)
 
-    main(CHIP_ID, HOST, LOG)
+        CHIP_ID = machine.unique_id()
+        if CHIP_ID == b'upy-non-unique':
+            CHIP_ID = str(utime.time()).split('.')[1]
+
+        main(CHIP_ID, HOST, LOG)
