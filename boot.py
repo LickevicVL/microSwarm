@@ -1,27 +1,31 @@
+import gc
 import network
+import ujson
 import utime
 from machine import Pin
 
-ESSID = 'ESSID'
-PASSWORD = 'PASSWORD'
 
-
-def do_connect(log):
-    sta_if = network.WLAN(network.STA_IF)
-    if not sta_if.isconnected():
-        log.write('connecting to network...')
-        sta_if.active(True)
-        sta_if.connect(ESSID, PASSWORD)
-        while not sta_if.isconnected():
+def do_connect(essid, password, log):
+    wlan = network.WLAN(network.STA_IF)
+    if not wlan.isconnected():
+        log.write('connecting to network...\n')
+        wlan.active(True)
+        wlan.connect(essid, password)
+        while not wlan.isconnected():
             pass
 
-    log.write('network config:', sta_if.ifconfig())
+    log.write('network config: {}\n'.format(wlan.ifconfig()))
 
 
 def main():
-    log_name = str(int(utime.time() * 1000)) + '.log'
-    with open(log_name, 'a+') as file:
-        do_connect(file)
+    with open('config.json', 'r') as file:
+        config = ujson.load(file)
+
+    essid = config['essid']
+    password = config['password']
+
+    with open('log.log', 'w+') as log:
+        do_connect(essid, password, log)
 
     pin = Pin(2, Pin.OUT)
     enabled = True
@@ -36,4 +40,5 @@ def main():
 
 
 if __name__ == '__main__':
+    gc.collect()
     main()
