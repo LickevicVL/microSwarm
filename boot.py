@@ -31,9 +31,9 @@ def main():
     enabled = True
     for i in range(5):
         if enabled:
-            pin.low()
+            pin.off()
         else:
-            pin.high()
+            pin.on()
 
         utime.sleep_ms(1000)
         enabled = not enabled

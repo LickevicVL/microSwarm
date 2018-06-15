@@ -10,10 +10,15 @@ def func(x, y):
 
 
 def get_random():
-    tv = int(utime.time())
-    r = float('0.{}'.format(tv))
+    tv = str(int(utime.time()))[-2:]
+    r = float('0.{}'.format(tv)) * (-1) ** (int(utime.time()) % 2)
 
     return r
+
+
+def get_location():
+
+    return [get_random(), get_random()]
 
 
 def get_parameters(url):
@@ -82,7 +87,7 @@ def get_data(url, log_url, chip_id, iteration):
 
 def run(chip_id, host, log_host):
     velocity = [0, 0]
-    data = [get_random(), get_random()]
+    data = get_location()
     url = host + 'data'
     logger = log_host + 'message'
 
