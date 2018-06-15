@@ -1,23 +1,23 @@
 import machine
+import random
 import ubinascii
 import ujson
 import urequests
 import utime
+from hcsr04 import HCSR04
 
 
 def func(x, y):
-    return x**2 + y**2
+    return x ** 2 + y ** 2
 
 
 def get_random():
-    tv = str(int(utime.time()))[-2:]
-    r = float('0.{}'.format(tv)) * (-1) ** (int(utime.time()) % 2)
+    r = random.randrange(1, 100) * (-1) ** (int(utime.time()) % 2)
 
     return r
 
 
 def get_location():
-
     return [get_random(), get_random()]
 
 
@@ -85,7 +85,7 @@ def get_data(url, log_url, chip_id, iteration):
     return gbest, pbest, r1, r2
 
 
-def run(chip_id, host, log_host):
+def run(chip_id, host, log_host, get_value_function):
     velocity = [0, 0]
     data = get_location()
     url = host + 'data'
@@ -94,7 +94,7 @@ def run(chip_id, host, log_host):
     w, c1, c2, iterations = get_parameters(url)
 
     for iteration in range(iterations):
-        value = func(*data)
+        value = get_value_function(*data)
 
         message = ujson.dumps({
             'iteration': iteration,
@@ -125,10 +125,16 @@ def main():
     CHIP_ID = machine.unique_id()
     if CHIP_ID == b'upy-non-unique':
         CHIP_ID = 'agent-{}'.format(int(utime.time()))
+        GET_VALUE_FUNCTION = lambda *args: func(*args)
     else:
         CHIP_ID = ubinascii.hexlify(machine.unique_id())
 
-    run(CHIP_ID, HOST, LOG)
+        trig_pin = 16
+        echo_pin = 0
+        sensor = HCSR04(trigger_pin=trig_pin, echo_pin=echo_pin)
+        GET_VALUE_FUNCTION = lambda *args: sensor.distance_cm()
+
+    run(CHIP_ID, HOST, LOG, GET_VALUE_FUNCTION)
 
 
 if __name__ == '__main__':
