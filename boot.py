@@ -6,6 +6,7 @@ from machine import Pin
 
 
 def do_connect(essid, password, log):
+    """Connect to the network"""
     wlan = network.WLAN(network.STA_IF)
     if not wlan.isconnected():
         log.write('connecting to network...\n')
@@ -21,12 +22,14 @@ def main():
     with open('config.json', 'r') as file:
         config = ujson.load(file)
 
+    # Get main parameters from config file config.json
     essid = config['essid']
     password = config['password']
 
     with open('log.log', 'w+') as log:
         do_connect(essid, password, log)
 
+    # Turn on/off light. Show, that esp8266 was connected to network
     pin = Pin(2, Pin.OUT)
     enabled = True
     for i in range(5):
